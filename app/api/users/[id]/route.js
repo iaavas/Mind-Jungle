@@ -1,6 +1,6 @@
 import { connectToDB } from '@utils/database';
 // @ts-ignore
-import User from '@models/User';
+import User from './../../../../models/user';
 export const GET = async (request, { params }) => {
   try {
     await connectToDB();
