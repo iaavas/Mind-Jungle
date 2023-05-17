@@ -14,7 +14,7 @@ const PromptCardList = ({ data, handleTagClick }) => {
           <PromptCard
             key={post._id}
             // @ts-ignore
-            liked={post.likedBy.includes(session.user.id)}
+            liked={post.likedBy.includes(session?.user?.id) || false}
             post={post}
             handleTagClick={handleTagClick}
             handleEdit

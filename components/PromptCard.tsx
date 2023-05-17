@@ -113,7 +113,7 @@ const PromptCard = ({
       <div className='mt-5 flex  gap-4 border-t  border-gray-100 pt-3'>
         <p
           // className='font-inter text-sm green_gradient cursor-pointer'
-          onClick={handleLike}
+          onClick={() => session?.user && handleLike}
         >
           {liked || myLiked ? <AiFillHeart /> : <AiOutlineHeart />}
         </p>
