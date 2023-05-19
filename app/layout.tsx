@@ -1,5 +1,6 @@
 import '@styles/globals.css';
 import React from 'react';
+import { Toaster } from 'react-hot-toast';
 import Nav from '@components/Nav';
 
 import Provider from '@components/Provider';
@@ -18,6 +19,8 @@ export default function RootLayout({
   return (
     <html lang='en'>
       <body>
+        <Toaster />
+
         {/* @ts-ignore */}
         <Provider>
           <div className='main'>

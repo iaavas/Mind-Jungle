@@ -5,7 +5,7 @@ export const GET = async (req, { params }) => {
     await connectToDB();
     const prompt = await Prompt.findById(params.id).populate([
       'creator',
-      'likes',
+      'comments',
     ]);
 
     if (!prompt) return new Response('Prompt not found', { status: 404 });

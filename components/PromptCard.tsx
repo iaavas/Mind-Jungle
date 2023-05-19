@@ -1,11 +1,39 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
+
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { AiOutlineHeart, AiFillHeart } from 'react-icons/ai';
+
+import {
+  AiOutlineHeart,
+  AiFillHeart,
+  AiOutlineCloseCircle,
+} from 'react-icons/ai';
+import { BiCommentAdd, BiCommentDetail } from 'react-icons/bi';
+
+import NewComment from './NewComment';
+import CommentBox from './CommentBox';
+
+// @ts-ignore
+const CommentCardList = ({ postComment }) => {
+  return (
+    <div className='mt-16 prompt_layout'>
+      {postComment.map((post: any) => {
+        return (
+          <CommentBox
+            key={post._id}
+            // @ts-ignore
+
+            post={post}
+          />
+        );
+      })}
+    </div>
+  );
+};
 
 const PromptCard = ({
   //@ts-ignore
@@ -19,13 +47,72 @@ const PromptCard = ({
   //@ts-ignore
   handleDelete,
 }) => {
+  const pathname = usePathname();
+
+  const promptClass = pathname.includes('profile')
+    ? 'mt-16 profile_layout'
+    : 'mt-16 prompt_layout';
+
+  console.log(pathname.includes('profile'));
+
   const [likes, setLikes] = useState(post.likes);
+  const [comment, setComment] = useState({});
   const [myLiked, setMyLiked] = useState(false);
 
   const router = useRouter();
   const { data: session } = useSession();
   const [copied, setCopied] = useState('');
   const pathName = usePathname();
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [viewComment, setViewComment] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [comments, setComments] = useState([]);
+  // @ts-ignore
+
+  // @ts-ignore
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const response = await fetch(`/api/comment/${post.id}`);
+      const data = await response.json();
+
+      setComments(data);
+    };
+    fetchPosts();
+  }, [post.id]);
+
+  // @ts-ignore
+  const createComment = async (e) => {
+    e.preventDefault();
+
+    try {
+      // @ts-ignore
+
+      const response = await fetch(`/api/comment/${post.id}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          // @ts-ignore
+          userId: session?.user?.id,
+          // @ts-ignore
+          myComment: comment.comment,
+        }),
+      });
+      if (response.ok) {
+        toast.success('Commented!');
+        setIsPopupOpen(false);
+
+        router.push('/');
+      }
+    } catch (error) {}
+  };
+
+  const handleOpenPopup = () => {
+    setIsPopupOpen((prev) => !prev);
+  };
+
+  const handleViewComments = () => {
+    setViewComment((prev) => !prev);
+  };
 
   const handleProfileClick = () => {
     // @ts-ignore
@@ -33,8 +120,6 @@ const PromptCard = ({
 
     router.push(`/profile/${post.creator._id}?name=${post.creator.username}`);
   };
-
-  console.log(post);
 
   const handleCopy = () => {
     setCopied(post.prompt);
@@ -67,7 +152,7 @@ const PromptCard = ({
   };
 
   return (
-    <div className='prompt_card'>
+    <div className={promptClass}>
       <div className='flex justify-between items-start gap-5'>
         <div
           className='flex-1 flex justify-start items-center gap-3 cursor-pointer'
@@ -110,18 +195,50 @@ const PromptCard = ({
         {post.tag}
       </p>
 
-      <div className='mt-5 flex  gap-4 border-t  border-gray-100 pt-3'>
+      <div className='mt-5 flex items-center gap-4 border-t  border-gray-100 pt-3 text-lg	'>
         <p
           // className='font-inter text-sm green_gradient cursor-pointer'
-          onClick={() => session?.user && handleLike}
+          onClick={() => session?.user && handleLike()}
+          className='text-2xl cursor-pointer'
         >
-          {liked || myLiked ? <AiFillHeart /> : <AiOutlineHeart />}
+          {liked || myLiked ? (
+            <AiFillHeart color='red' />
+          ) : (
+            <AiOutlineHeart color='red' />
+          )}
         </p>
 
-        <p className='font-inter text-sm orange_gradient cursor-pointer'>
-          {likes}
-        </p>
+        <p className='font-inter  cursor-pointer text-lg '>{likes}</p>
+        {/* @ts-ignore */}
+        {viewComment && session?.user && (
+          // @ts-ignore
+          <CommentCardList postComment={comments.comments} />
+        )}
+        <button
+          onClick={handleViewComments}
+          className=' gap-4 border-t  border-gray-100  text-lg	'
+          style={{ display: session?.user ? 'block' : 'none' }}
+        >
+          {!isPopupOpen ? <BiCommentDetail /> : <AiOutlineCloseCircle />}
+        </button>
+
+        {isPopupOpen && session?.user && (
+          <NewComment
+            handleSubmit={createComment}
+            comment={comment}
+            setComment={setComment}
+            submitting={submitting}
+          />
+        )}
+        <button
+          onClick={handleOpenPopup}
+          className=' gap-4 border-t  border-gray-100  text-lg	'
+          style={{ display: session?.user ? 'block' : 'none' }}
+        >
+          {!isPopupOpen ? <BiCommentAdd /> : <AiOutlineCloseCircle />}
+        </button>
       </div>
+
       {/* @ts-ignore */}
       {session?.user?.id === post.creator._id && pathName === '/profile' && (
         <div className='mt-5 flex-center gap-4 border-t  border-gray-100 pt-3'>

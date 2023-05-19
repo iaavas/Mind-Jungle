@@ -25,17 +25,30 @@ const PromptSchema = new Schema({
 
 
     }],
+    createdAt: { type: Date, default: Date.now }
+
+
 
 }, {
+    timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
 })
 
-PromptSchema.virtual('like', {
-    ref: 'Like',
-    foreignField: 'post',
+// PromptSchema.virtual('comments', {
+//     ref: 'Comment',
+//     foreignField: 'prompt',
+//     localField: '_id',
+// });
+PromptSchema.virtual('comments', {
+    ref: 'Comment',
+    foreignField: 'prompt',
     localField: '_id',
 });
+
+
+
+
 
 
 const Prompt = models.Prompt || model("Prompt", PromptSchema)
